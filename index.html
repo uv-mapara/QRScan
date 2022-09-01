@@ -7,59 +7,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <title>qrcode</title>
     <style>
-        .fa-qrcode:before {
-            content: "\f029";
-        }
-
-        i.fa.fa-qrcode {
-            color: #000000;
-            position: absolute;
-            font-size: 30px;
-            z-index: 2;
-            top: 18px;
-            right: 16px;
-        }
-
-        #v {
-            height: 100%;
-            width: 100%;
-        }
-
-        .selector {
-            margin: 0;
-            padding: 0;
-            cursor: pointer;
-            margin-bottom: -5px;
-        }
-
-        #outdiv {
-            width: 100%;
-            height: 230px;
-            border: solid;
-            border-width: 3px 3px 3px 3px;
-        }
-
-        #result {
-            display: block;
-            color: black;
-        }
-
-        #qr-canvas {
-            display: none;
-        }       
+        
       </style>
 </head>
 <body>  
-
-
-<div class="row">
-  <div class="col-md-5 col-sm-6 col-xs-12 RespMarginBottom5 boxSearch ZIndex1000 txtTicketRefNo_MngBook" id="BoxQRCode">
-    <i class="fa fa-qrcode selector" id="webcamimg" onclick="setwebcam()"></i>
-    <input name="txtTicketRefNo_MngBook" type="text" class="form-control CustValidation" id="txtTicketRefNo_MngBook" data-in-validate="true" data-in-validate-msg="* Booking ID / Ticket Ref. No." data-in-validate-type="1" data-in-validate-index="3" maxlength="50" placeholder="Booking ID / Ticket Ref. No." onblur="isRule(this, objEmailAsUsername)" onkeyup="isRule(this, objEmailAsUsername)" onkeypress="isRule(this, objEmailAsUsername)">
-    <div id="outdiv" style="display:none;">
-    </div>
-  </div>
-</div>
 
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -67,105 +18,46 @@
 <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
 <script type="text/javascript" src="https://webqr.com/webqr.js"></script>
 
-<script type="text/javascript">
-  load();
-  var vidhtml = '<video id="v"></video>';
-  vidhtml.setAttribute('autoplay', '');
-  vidhtml.setAttribute('muted', '');
-  vidhtml.setAttribute('playsinline', '');
-  
-  function htmlEntities(str) {
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }        
-  
-  function read(a) {
-      var html = "";
-      html = htmlEntities(a);
-      document.getElementById("txtTicketRefNo_MngBook").value = html;
-      document.getElementById("outdiv").style.display = "none";
-  }        
+<script>
+    var video = document.createElement('video');
+    video.style.width = document.width + 'px';
+    video.style.height = document.height + 'px';
+    video.setAttribute('autoplay', '');
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
 
-  function setwebcam() {
-      var x = document.getElementById("outdiv");
-      console.log(x.style.display)
-      if (x.style.display === "none") {
-          x.style.display = "block";
-          $('#txtTicketRefNo_MngBook').attr('placeholder', '- scanning -');
-
-      } else {
-          x.style.display = "none";
-          $('#txtTicketRefNo_MngBook').attr('placeholder', 'Booking ID / Ticket Ref.No.');
-      }
-
-      var options = true;
-      var uA = navigator.userAgent || navigator.vendor || window.opera;
-      if ((/iPad|iPhone|iPod/.test(uA) && !window.MSStream) || (uA.includes('Mac') && 'ontouchend' in document) || navigator.mediaDevices.enumerateDevices) {
-          try {
-              navigator.mediaDevices.enumerateDevices()
-              .then(function (devices) {
-                  devices.forEach(function (device) {
-                      if (device.kind === 'videoinput') {
-                          if (device.label.toLowerCase().search("back") > -1)
-                              options = { 'deviceId': { 'exact': device.deviceId }, 'facingMode': 'environment' };
-                      }
-                      console.log(device.kind + ": " + device.label + " id = " + device.deviceId);
-                  });
-
-                  setwebcam2(options);
-              });
-          }
-          catch (e) {
-              console.log(e);
-          }
-      }
-      else {
-          console.log("no navigator.mediaDevices.enumerateDevices");
-          setwebcam2(options);
-      }
-
+    var facingMode = "user";
+var constraints = {
+  audio: false,
+  video: {
+   facingMode: facingMode
   }
+}
 
-  function setwebcam2(options) {
-      console.log(options);
+navigator.mediaDevices.getUserMedia(constraints).then(function success(stream) {
+  video.srcObject = stream;
+});
 
+document.body.appendChild(video);
 
-      //document.getElementById("txtTicketRefNo_MngBook").value = "- scanning -";
-
-
-      if (stype == 1) {
-          setTimeout(captureToCanvas, 500);
-          return;
-      }
-      var n = navigator;
-      document.getElementById("outdiv").innerHTML = vidhtml;
-      v = document.getElementById("v");
-
-
-      if (n.mediaDevices.getUserMedia) {
-          n.mediaDevices.getUserMedia({ video: options, audio: false }).
-              then(function (stream) {
-                  success(stream);
-              }).catch(function (error) {
-                  error(error)
-              });
-      }
-      else
-          if (n.getUserMedia) {
-              webkit = true;
-              n.getUserMedia({ video: options, audio: false }, success, error);
-          }
-          else
-              if (n.webkitGetUserMedia) {
-                  webkit = true;
-                  n.webkitGetUserMedia({ video: options, audio: false }, success, error);
-              }
-
-      document.getElementById("webcamimg").style.opacity = 1.0;
-
-      stype = 1;
-      setTimeout(captureToCanvas, 500);
-  }        
-
+video.addEventListener('click', function() {
+  if (facingMode == "user") {
+    facingMode = "environment";
+  } else {
+    facingMode = "user";
+  }
+ 
+  constraints = {
+    audio: false,
+    video: {
+      facingMode: facingMode
+    }
+  } 
+ 
+  navigator.mediaDevices.getUserMedia(constraints).then(function success(stream) {
+    video.srcObject = stream; 
+  });
+});
 </script>
 
 </body>
